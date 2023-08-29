@@ -88,6 +88,23 @@ impl<T> MyVec<T> {
     }
 }
 
+impl<T> Drop for MyVec<T> {
+    fn drop(&mut self) {
+        if self.capacity != 0 {
+            while let Some(_element) = self.pop() {
+                // will decrement the self.length using .pop() until it returns None 
+            }
+            
+            // get the layout of self so we can deallocate everything
+            let self_layout: Layout = Layout::array::<T>(self.capacity).unwrap();
+
+            unsafe {
+                // deallocate self according to it's layout
+                alloc::dealloc(self.pointer.as_ptr() as *mut u8, self_layout);
+            }
+        }
+    }
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut v: MyVec<i32> = MyVec::new();
@@ -96,10 +113,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         v.push(i);
     }    
 
-    for _ in 0..=v.length {
+    for _ in 0..=50 {
         match v.pop() {
             Some(element) => print!("{element}, "),
-            None => println!("End"),
+            None => println!("No more elements."),
         }
     }
 
